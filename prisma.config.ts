@@ -7,6 +7,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["POSTGRES_PRISMA_URL"] ?? process.env["DATABASE_URL"],
+    // db push / migrate needs a direct (non-pgbouncer) connection
+    url: process.env["POSTGRES_URL_NON_POOLING"] ?? process.env["DATABASE_URL"],
   },
 });
