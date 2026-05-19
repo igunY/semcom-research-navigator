@@ -133,7 +133,7 @@ export function Sidebar() {
           type="password"
           value={state.geminiApiKey}
           onChange={(e) => dispatch({ type: "SET_GEMINI_KEY", payload: e.target.value })}
-          placeholder=".env.local の GEMINI_API_KEY でも可"
+          placeholder=".env.local の GOOGLE_GEMINI_API_KEY でも可"
           className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
 

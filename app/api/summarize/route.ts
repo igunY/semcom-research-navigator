@@ -4,7 +4,7 @@ import { summarize } from "@/lib/ai/summarizer";
 export async function POST(request: NextRequest) {
   const { title, content, contentType, apiKey } = await request.json();
 
-  const key = apiKey || process.env.GEMINI_API_KEY;
+  const key = apiKey || process.env.GOOGLE_GEMINI_API_KEY;
   if (!key) return Response.json({ error: "Gemini API Key が設定されていません" }, { status: 400 });
 
   try {
