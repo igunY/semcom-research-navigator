@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Bookmark {
+  id                  Int      @id @default(autoincrement())
+  title               String
+  url                 String   @unique
+  type                String
+  source              String?
+  authors             String[]
+  year                String?
+  abstract            String?
+  institutions        String[]
+  affiliationCategory String?
+  citationCount       Int      @default(0)
+  score               Int      @default(0)
+  summary             String?
+  createdAt           DateTime @default(now())
+}
