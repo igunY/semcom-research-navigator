@@ -67,7 +67,7 @@ export function NewsCard({ item, summaryKey, saveType = "news" }: Props) {
         )}
       </h3>
 
-      <div className="flex gap-4 text-sm text-gray-500 mb-2">
+      <div className="flex flex-wrap gap-2 text-sm text-gray-500 mb-2">
         <span>📰 {item.source}</span>
         <span>📅 {item.published}</span>
       </div>
@@ -88,8 +88,8 @@ export function NewsCard({ item, summaryKey, saveType = "news" }: Props) {
         </div>
       )}
 
-      <div className="flex items-center gap-2 mt-2">
-        <div className="flex-1">
+      <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex-1 min-w-0">
           {!summary && (
             <button
               onClick={generateSummary}

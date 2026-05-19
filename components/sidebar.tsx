@@ -17,7 +17,11 @@ const COMPOUND_KEYWORDS = [
   "quantum error correction",
 ];
 
-export function Sidebar() {
+interface Props {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: Props) {
   const { state, dispatch, doSearch } = useSearch();
   const pathname = usePathname();
   const router = useRouter();
@@ -28,16 +32,36 @@ export function Sidebar() {
 
   async function handleSearch() {
     if (!state.keyword.trim()) return;
+    onClose?.();
     if (pathname !== "/") router.push("/");
     await doSearch();
   }
 
+  function handleNav() {
+    onClose?.();
+  }
+
   return (
-    <aside className="w-64 shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-72 lg:w-64 shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-y-auto">
       <div className="p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-2xl">🔭</span>
-          <span className="font-bold text-lg">Research Navigator</span>
+        {/* ── Header row ── */}
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🔭</span>
+            <span className="font-bold text-lg">Research Navigator</span>
+          </div>
+          {/* Close button — mobile only */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 rounded hover:bg-gray-200"
+              aria-label="閉じる"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         <p className="text-xs text-gray-500 mb-4">SemCom / 6G / AI 業界俯瞰ツール</p>
 
@@ -47,12 +71,14 @@ export function Sidebar() {
         <nav className="flex flex-col gap-1 mb-4">
           <a
             href="/"
+            onClick={handleNav}
             className={`px-3 py-2 rounded text-sm font-medium ${pathname === "/" ? "bg-indigo-100 text-indigo-700" : "text-gray-700 hover:bg-gray-200"}`}
           >
             🔍 検索・ダッシュボード
           </a>
           <a
             href="/bookmarks"
+            onClick={handleNav}
             className={`px-3 py-2 rounded text-sm font-medium ${pathname === "/bookmarks" ? "bg-indigo-100 text-indigo-700" : "text-gray-700 hover:bg-gray-200"}`}
           >
             ⭐ 自分専用の業界地図
@@ -124,7 +150,7 @@ export function Sidebar() {
           max={20}
           value={state.maxResults}
           onChange={(e) => dispatch({ type: "SET_MAX_RESULTS", payload: Number(e.target.value) })}
-          className="w-full mb-4"
+          className="w-full mb-4 accent-indigo-600"
         />
 
         {/* ── Gemini API Key ── */}
@@ -143,7 +169,7 @@ export function Sidebar() {
         <button
           onClick={handleSearch}
           disabled={state.isLoading || !state.keyword.trim()}
-          className="w-full bg-indigo-600 text-white py-2 rounded font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-base"
         >
           {state.isLoading ? "収集中…" : "🔍 検索・収集"}
         </button>

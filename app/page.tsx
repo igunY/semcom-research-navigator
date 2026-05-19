@@ -27,10 +27,13 @@ export default function SearchPage() {
 
   if (!state.keyword) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <div className="text-6xl mb-4">🔭</div>
         <h1 className="text-2xl font-bold mb-2">Research Navigator</h1>
-        <p className="text-gray-500">サイドバーからキーワードを入力・選択して「🔍 検索・収集」を押してください。</p>
+        <p className="text-gray-500 text-sm">
+          <span className="lg:hidden">左上のメニューからキーワードを入力して「🔍 検索・収集」を押してください。</span>
+          <span className="hidden lg:inline">サイドバーからキーワードを入力・選択して「🔍 検索・収集」を押してください。</span>
+        </p>
       </div>
     );
   }
@@ -96,7 +99,7 @@ export default function SearchPage() {
 
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h2 className="text-sm font-semibold mb-3">🗺️ 業界マップ フィルタ</h2>
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
               <div>
                 <label className="text-xs text-gray-600 block mb-1">所属カテゴリ</label>
                 <select
@@ -135,7 +138,7 @@ export default function SearchPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-3 text-center">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
               {[
                 { label: "表示件数", value: filtered.length },
                 { label: "🎓 Academic", value: academicN },

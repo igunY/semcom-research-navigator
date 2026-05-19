@@ -38,7 +38,7 @@ export default function BookmarksPage() {
       <h1 className="text-xl font-bold mb-1">⭐ 自分専用の業界地図</h1>
       <p className="text-sm text-gray-500 mb-4">保存した論文・ニュース・HN投稿を一覧できます。</p>
 
-      <div className="flex gap-1 border-b border-gray-200 mb-4">
+      <div className="flex gap-1 border-b border-gray-200 mb-4 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}

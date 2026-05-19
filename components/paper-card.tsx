@@ -94,13 +94,13 @@ export function PaperCard({ paper, index }: Props) {
         </div>
       )}
 
-      <div className="flex items-center gap-2 mt-2">
-        <div className="flex-1">
+      <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex-1 min-w-0">
           {!summary ? (
             <button
               onClick={generateSummary}
               disabled={loading}
-              className="text-sm px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+              className="text-sm px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 w-full sm:w-auto"
             >
               {loading ? "生成中…" : "AI 要約を生成"}
             </button>
@@ -108,7 +108,7 @@ export function PaperCard({ paper, index }: Props) {
         </div>
         <button
           onClick={saveBookmark}
-          className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
+          className="text-sm px-3 py-2 border border-gray-300 rounded hover:bg-gray-100 shrink-0"
         >
           ⭐ 保存
         </button>
