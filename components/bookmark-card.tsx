@@ -46,7 +46,7 @@ export function BookmarkCard({ bookmark, onDelete }: Props) {
       </div>
 
       <div className="flex flex-wrap mt-2 mb-1">
-        {paper && bookmark.source && (bookmark.source === "OpenAlex" || bookmark.source === "arXiv") && (
+        {paper && bookmark.source === "OpenAlex" && (
           <SourceBadge source={bookmark.source} />
         )}
         {bookmark.affiliationCategory && <AffBadge category={bookmark.affiliationCategory} />}

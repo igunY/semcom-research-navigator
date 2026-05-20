@@ -8,8 +8,8 @@ import { HNCard } from "@/components/hn-card";
 import type { PaperItem } from "@/types";
 
 type AffFilter = "全て" | "🎓 Academic（大学）" | "🏢 Corporate（企業）" | "🔀 Mixed";
-type SortOpt = "引用数（多い順）" | "引用数（少ない順）" | "新しい順";
-type SrcFilter = "全て" | "OpenAlex" | "arXiv";
+type SortOpt = "新しい順" | "引用数（多い順）" | "引用数（少ない順）";
+type OaFilter = "全て" | "🔓 OA のみ" | "🔒 非 OA のみ";
 type TabId = "papers" | "news" | "hn" | "wildcard";
 
 const AFF_MAP: Record<string, PaperItem["affiliationCategory"]> = {
@@ -22,8 +22,8 @@ export default function SearchPage() {
   const { state } = useSearch();
   const [activeTab, setActiveTab] = useState<TabId>("papers");
   const [affFilter, setAffFilter] = useState<AffFilter>("全て");
-  const [sortOpt, setSortOpt] = useState<SortOpt>("引用数（多い順）");
-  const [srcFilter, setSrcFilter] = useState<SrcFilter>("全て");
+  const [sortOpt, setSortOpt] = useState<SortOpt>("新しい順");
+  const [oaFilter, setOaFilter] = useState<OaFilter>("全て");
 
   if (!state.keyword) {
     return (
@@ -44,12 +44,11 @@ export default function SearchPage() {
     const cat = AFF_MAP[affFilter];
     filtered = filtered.filter((p) => p.affiliationCategory === cat);
   }
-  if (srcFilter !== "全て") {
-    filtered = filtered.filter((p) => p.source === srcFilter);
-  }
-  if (sortOpt === "引用数（多い順）") filtered.sort((a, b) => b.citationCount - a.citationCount);
-  else if (sortOpt === "引用数（少ない順）") filtered.sort((a, b) => a.citationCount - b.citationCount);
-  else filtered.sort((a, b) => (b.year ?? "").localeCompare(a.year ?? ""));
+  if (oaFilter === "🔓 OA のみ") filtered = filtered.filter((p) => p.isOa);
+  else if (oaFilter === "🔒 非 OA のみ") filtered = filtered.filter((p) => !p.isOa);
+  if (sortOpt === "新しい順") filtered.sort((a, b) => (b.year ?? "").localeCompare(a.year ?? ""));
+  else if (sortOpt === "引用数（多い順）") filtered.sort((a, b) => b.citationCount - a.citationCount);
+  else filtered.sort((a, b) => a.citationCount - b.citationCount);
 
   const academicN = filtered.filter((p) => p.affiliationCategory === "Academic").length;
   const corporateN = filtered.filter((p) => p.affiliationCategory === "Corporate").length;
@@ -91,12 +90,6 @@ export default function SearchPage() {
       {/* ── Papers tab ── */}
       {activeTab === "papers" && (
         <div>
-          {state.paperWarning && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm p-3 rounded mb-4">
-              {state.paperWarning}
-            </div>
-          )}
-
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h2 className="text-sm font-semibold mb-3">🗺️ 業界マップ フィルタ</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -125,13 +118,13 @@ export default function SearchPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-600 block mb-1">データソース</label>
+                <label className="text-xs text-gray-600 block mb-1">オープンアクセス</label>
                 <select
-                  value={srcFilter}
-                  onChange={(e) => setSrcFilter(e.target.value as SrcFilter)}
+                  value={oaFilter}
+                  onChange={(e) => setOaFilter(e.target.value as OaFilter)}
                   className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
                 >
-                  {["全て", "OpenAlex", "arXiv"].map((o) => (
+                  {["全て", "🔓 OA のみ", "🔒 非 OA のみ"].map((o) => (
                     <option key={o}>{o}</option>
                   ))}
                 </select>

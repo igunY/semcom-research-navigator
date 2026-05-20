@@ -52,3 +52,11 @@ export function CommentBadge({ count }: { count: number }) {
   const bg = count >= 50 ? "#1a73e8" : "#888888";
   return <Badge bg={bg}>💬 {count}</Badge>;
 }
+
+export function OaBadge() {
+  return <Badge bg="#2e7d32">🔓 Open Access</Badge>;
+}
+
+export function TopicBadge({ topic }: { topic: string }) {
+  return <Badge bg="#0d47a1">🏷️ {topic}</Badge>;
+}

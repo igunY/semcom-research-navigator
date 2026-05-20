@@ -7,7 +7,9 @@ export interface PaperItem {
   institutions: string[];
   affiliationCategory: "Academic" | "Corporate" | "Mixed" | "Unknown";
   citationCount: number;
-  source: "OpenAlex" | "arXiv";
+  source: "OpenAlex";
+  topics: string[];
+  isOa: boolean;
 }
 
 export interface NewsItem {

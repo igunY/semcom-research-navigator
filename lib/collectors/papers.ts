@@ -1,4 +1,3 @@
-import { XMLParser } from "fast-xml-parser";
 import type { PaperItem } from "@/types";
 
 // ── OpenAlex ──────────────────────────────────────────────────────────────────
@@ -13,8 +12,9 @@ interface OAWork {
   }[];
   publication_year: number | null;
   cited_by_count: number;
-  primary_location?: { landing_page_url?: string; source?: { display_name: string } };
   doi?: string;
+  topics?: { display_name: string }[];
+  open_access?: { is_oa: boolean };
 }
 
 function reconstructAbstract(idx: Record<string, number[]> | null): string {
@@ -41,102 +41,53 @@ function classifyAffiliation(
 }
 
 async function fetchOpenAlex(keyword: string, max: number): Promise<PaperItem[]> {
+  const fromDate = new Date();
+  fromDate.setFullYear(fromDate.getFullYear() - 1);
+  const fromDateStr = fromDate.toISOString().split("T")[0];
+
   const url =
     `https://api.openalex.org/works?search=${encodeURIComponent(keyword)}` +
-    `&per-page=${max}&sort=cited_by_count:desc` +
-    `&select=id,title,abstract_inverted_index,authorships,publication_year,cited_by_count,primary_location,doi` +
-    `&mailto=research-navigator@example.com`;
+    `&per-page=${max}` +
+    `&sort=publication_date:desc` +
+    `&from_publication_date=${fromDateStr}` +
+    `&select=id,title,abstract_inverted_index,authorships,publication_year,cited_by_count,doi,topics,open_access` +
+    `&mailto=hamayuzuki628@gmail.com`;
 
   const res = await fetch(url, { next: { revalidate: 3600 } });
   if (!res.ok) throw new Error(`OpenAlex ${res.status}`);
   const data = (await res.json()) as { results: OAWork[] };
 
-  return (data.results ?? []).map((w) => {
+  const items: PaperItem[] = [];
+  for (const w of data.results ?? []) {
+    const abstract = reconstructAbstract(w.abstract_inverted_index);
+    if (!abstract) continue;
+
     const authGroups = w.authorships.map((a) => a.institutions ?? []);
-    return {
+    const doi = w.doi ?? "";
+    const url = doi.startsWith("http") ? doi : doi ? `https://doi.org/${doi}` : "";
+    const topics = (w.topics ?? []).map((t) => t.display_name).filter(Boolean).slice(0, 5);
+
+    items.push({
       title: w.title ?? "(No title)",
-      url: w.primary_location?.landing_page_url ?? (w.doi ? `https://doi.org/${w.doi}` : ""),
+      url,
       authors: w.authorships.map((a) => a.author.display_name),
       year: w.publication_year?.toString() ?? null,
-      abstract: reconstructAbstract(w.abstract_inverted_index),
+      abstract,
       institutions: w.authorships.flatMap((a) => a.institutions.map((i) => i.display_name)),
       affiliationCategory: classifyAffiliation(authGroups),
       citationCount: w.cited_by_count ?? 0,
       source: "OpenAlex" as const,
-    };
-  });
-}
-
-// ── arXiv ─────────────────────────────────────────────────────────────────────
-
-async function fetchArxiv(keyword: string, max: number): Promise<{ items: PaperItem[]; warning: string }> {
-  const url =
-    `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(keyword)}` +
-    `&max_results=${max}&sortBy=submittedDate&sortOrder=descending`;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    if (res.status === 429) return { items: [], warning: "arXiv のレート制限に達しました。少し待ってから再検索してください。" };
-    throw new Error(`arXiv ${res.status}`);
+      topics,
+      isOa: w.open_access?.is_oa ?? false,
+    });
   }
-  const xml = await res.text();
-
-  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
-  const parsed = parser.parse(xml) as {
-    feed?: { entry?: unknown[] | Record<string, unknown> };
-  };
-
-  const rawEntries = parsed.feed?.entry;
-  if (!rawEntries) return { items: [], warning: "" };
-  const entries = Array.isArray(rawEntries) ? rawEntries : [rawEntries];
-
-  const items: PaperItem[] = (entries as Record<string, unknown>[]).map((e) => {
-    const id = (e.id as string) ?? "";
-    const url = id.replace("http://", "https://");
-    const authors = Array.isArray(e.author)
-      ? (e.author as { name: string }[]).map((a) => a.name)
-      : e.author
-      ? [(e.author as { name: string }).name]
-      : [];
-    const published = (e.published as string) ?? "";
-    const year = published.slice(0, 4) || null;
-
-    return {
-      title: (e.title as string)?.trim() ?? "(No title)",
-      url,
-      authors,
-      year,
-      abstract: (e.summary as string)?.trim() ?? "",
-      institutions: [],
-      affiliationCategory: "Unknown" as const,
-      citationCount: 0,
-      source: "arXiv" as const,
-    };
-  });
-
-  return { items, warning: "" };
+  return items;
 }
-
-// ── Merge ─────────────────────────────────────────────────────────────────────
 
 export async function fetchPapers(
   keyword: string,
   max: number
 ): Promise<{ items: PaperItem[]; warning: string }> {
-  const [oaResult, arxivResult] = await Promise.allSettled([
-    fetchOpenAlex(keyword, max),
-    fetchArxiv(keyword, max),
-  ]);
-
-  const oaItems = oaResult.status === "fulfilled" ? oaResult.value : [];
-  const { items: arxivItems, warning } =
-    arxivResult.status === "fulfilled" ? arxivResult.value : { items: [], warning: "" };
-
-  const seen = new Set(oaItems.map((p) => p.title.toLowerCase().slice(0, 60)));
-  const merged = [
-    ...oaItems,
-    ...arxivItems.filter((p) => !seen.has(p.title.toLowerCase().slice(0, 60))),
-  ].slice(0, max * 2);
-
-  return { items: merged, warning };
+  const items = await fetchOpenAlex(keyword, max);
+  return { items, warning: "" };
 }

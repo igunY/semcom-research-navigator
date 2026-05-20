@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PaperItem } from "@/types";
-import { AffBadge, SourceBadge, CitationBadge } from "./badges";
+import { AffBadge, SourceBadge, CitationBadge, OaBadge, TopicBadge } from "./badges";
 import { useSearch } from "@/context/search-context";
 
 interface Props {
@@ -68,8 +68,15 @@ export function PaperCard({ paper, index }: Props) {
       <div className="flex flex-wrap mb-2">
         <SourceBadge source={paper.source} />
         <AffBadge category={paper.affiliationCategory} />
+        {paper.isOa && <OaBadge />}
         <CitationBadge count={paper.citationCount} />
       </div>
+
+      {paper.topics.length > 0 && (
+        <div className="flex flex-wrap mb-2">
+          {paper.topics.map((t) => <TopicBadge key={t} topic={t} />)}
+        </div>
+      )}
 
       <div className="text-sm text-gray-500 mb-1">
         {[paper.year && `📅 ${paper.year}`, paper.authors.slice(0, 3).join(", ") && `👤 ${paper.authors.slice(0, 3).join(", ")}`]
