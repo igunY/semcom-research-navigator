@@ -1,0 +1,7 @@
+streamlit>=1.35
+requests
+beautifulsoup4
+feedparser
+google-genai
+python-dotenv
+pandas
