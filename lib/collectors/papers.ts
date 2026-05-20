@@ -45,11 +45,12 @@ async function fetchOpenAlex(keyword: string, max: number): Promise<PaperItem[]>
   fromDate.setFullYear(fromDate.getFullYear() - 1);
   const fromDateStr = fromDate.toISOString().split("T")[0];
 
+  // abstractフィルタで脱落する分を補うため多めに取得してスライス
+  const fetchCount = Math.max(max * 3, 40);
   const url =
     `https://api.openalex.org/works?search=${encodeURIComponent(keyword)}` +
-    `&per-page=${max}` +
-    `&sort=publication_date:desc` +
-    `&from_publication_date=${fromDateStr}` +
+    `&per-page=${fetchCount}` +
+    `&filter=from_publication_date:${fromDateStr}` +
     `&select=id,title,abstract_inverted_index,authorships,publication_year,cited_by_count,doi,topics,open_access` +
     `&mailto=hamayuzuki628@gmail.com`;
 
@@ -81,7 +82,7 @@ async function fetchOpenAlex(keyword: string, max: number): Promise<PaperItem[]>
       isOa: w.open_access?.is_oa ?? false,
     });
   }
-  return items;
+  return items.slice(0, max);
 }
 
 export async function fetchPapers(

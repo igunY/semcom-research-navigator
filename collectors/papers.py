@@ -55,7 +55,7 @@ def _reconstruct_abstract(inverted_index: dict | None) -> str:
     return " ".join(w for w in words if w)
 
 
-def _fetch_openalex(query: str, per_page: int = 20) -> list[PaperItem]:
+def _fetch_openalex(query: str, per_page: int = 40) -> list[PaperItem]:
     from_date = (date.today() - timedelta(days=365)).isoformat()
     params = {
         "search": query,
@@ -64,8 +64,7 @@ def _fetch_openalex(query: str, per_page: int = 20) -> list[PaperItem]:
             "id,title,doi,publication_year,cited_by_count,"
             "authorships,abstract_inverted_index,topics,open_access"
         ),
-        "sort": "publication_date:desc",
-        "from_publication_date": from_date,
+        "filter": f"from_publication_date:{from_date}",
     }
     try:
         r = requests.get(
@@ -148,4 +147,6 @@ def _fetch_openalex(query: str, per_page: int = 20) -> list[PaperItem]:
 
 def fetch_papers(keyword: str, max_results: int = 10) -> tuple[list[PaperItem], str]:
     query = _clean_keyword(keyword)
-    return _fetch_openalex(query, max(max_results, 20)), ""
+    # abstractフィルタで脱落する分を補うため多めに取得してスライス
+    items = _fetch_openalex(query, max(max_results * 3, 40))
+    return items[:max_results], ""
